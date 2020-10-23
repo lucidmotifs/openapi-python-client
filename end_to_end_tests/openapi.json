@@ -568,6 +568,20 @@
           "1_leading_digit": {
             "title": "Leading Digit",
             "type": "string"
+          },
+          "a_nullable_union": {
+            "title": "Nullable Union",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "string",
+                "format": "date"
+              }
+            ],
+            "nullable": true
           }
         },
         "description": "A Model for testing all the ways custom objects can be used "

@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import attr
 from dateutil.parser import isoparse
@@ -18,6 +18,7 @@ class AModel:
     a_date: datetime.date
     nested_list_of_enums: Optional[List[List[DifferentEnum]]] = None
     attr_1_leading_digit: Optional[str] = None
+    a_nullable_union: Optional[Union[Optional[datetime.datetime], Optional[datetime.date]]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         an_enum_value = self.an_enum_value.value
@@ -46,6 +47,13 @@ class AModel:
                 nested_list_of_enums.append(nested_list_of_enums_item)
 
         attr_1_leading_digit = self.attr_1_leading_digit
+        if self.a_nullable_union is None:
+            a_nullable_union: Optional[Union[Optional[datetime.datetime], Optional[datetime.date]]] = None
+        elif isinstance(self.a_nullable_union, datetime.datetime):
+            a_nullable_union = self.a_nullable_union.isoformat() if self.a_nullable_union else None
+
+        else:
+            a_nullable_union = self.a_nullable_union.isoformat() if self.a_nullable_union else None
 
         return {
             "an_enum_value": an_enum_value,
@@ -54,6 +62,7 @@ class AModel:
             "a_date": a_date,
             "nested_list_of_enums": nested_list_of_enums,
             "1_leading_digit": attr_1_leading_digit,
+            "a_nullable_union": a_nullable_union,
         }
 
     @staticmethod
@@ -90,6 +99,28 @@ class AModel:
 
         attr_1_leading_digit = d.get("1_leading_digit")
 
+        def _parse_a_nullable_union(
+            data: Dict[str, Any]
+        ) -> Optional[Union[Optional[datetime.datetime], Optional[datetime.date]]]:
+            a_nullable_union: Optional[Union[Optional[datetime.datetime], Optional[datetime.date]]]
+            try:
+                a_nullable_union = None
+                if d.get("a_nullable_union") is not None:
+                    a_nullable_union = isoparse(cast(str, d.get("a_nullable_union")))
+
+                return a_nullable_union
+            except:  # noqa: E722
+                pass
+            a_nullable_union = None
+            if d.get("a_nullable_union") is not None:
+                a_nullable_union = isoparse(cast(str, d.get("a_nullable_union"))).date()
+
+            return a_nullable_union
+
+        a_nullable_union = None
+        if d.get("a_nullable_union") is not None:
+            a_nullable_union = _parse_a_nullable_union(d.get("a_nullable_union"))
+
         return AModel(
             an_enum_value=an_enum_value,
             some_dict=some_dict,
@@ -97,4 +128,5 @@ class AModel:
             a_date=a_date,
             nested_list_of_enums=nested_list_of_enums,
             attr_1_leading_digit=attr_1_leading_digit,
+            a_nullable_union=a_nullable_union,
         )
